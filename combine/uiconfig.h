@@ -1,1 +1,1 @@
-uiconfig.h
+/home/ubuntu/myrepetier/uiconfig.h
