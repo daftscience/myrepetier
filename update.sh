@@ -1,4 +1,5 @@
 #!/bin/bash
+
 rm ~/myrepetier/combine/*
 ln -s ~/Repetier-Firmware/src/ArduinoAVR/Repetier/* ~/myrepetier/combine/
 
