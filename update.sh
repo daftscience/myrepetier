@@ -1,37 +1,44 @@
 #!/bin/bash
 
 
-echo "Removing old files"
-rm -r  ~/myrepetier/combine
-mkdir ~/myrepetier/combine
+##Location of this git clone
+EDITED="/home/ubuntu/myrepetier"
+#Folder where we are going to combine edited files with unedited
+COMBINE="/home/ubuntu/.repetierworkingfolder"
+#folder where RH source code is (unmodified)
+RH="/home/ubuntu/Repetier-Firmware"
+RHS="/home/ubuntu/Repetier-Firmware/src/ArduinoAVR/Repetier"
+files=( "pins.h" "uiconfig.h" "Configuration.h")
 
-echo "Updating Repetier"
-cd ~/Repetier-Firmware
-git pull
-cd ~/
-
-echo "Copying repetier files"
-cp -r ~/Repetier-Firmware/src/ArduinoAVR/Repetier/* ~/myrepetier/combine/
-
-echo "Replacing modified files"
-
-files=( "pins.h" "uiconfig.h")
-files+=("Configuration.h")
-
+## Because I will forget, this is a quick way to add to array
+#files+=("Configuration.h")
 printf "\t%s\n" "${files[@]}"
 
+
+
+echo "Removing old files"
+rm -r  "$COMBINE"
+mkdir "$COMBINE"
+
+echo "Updating Repetier"
+cd "$RH"
+git pull
+
+echo "Copying repetier files"
+cp -r "$RHS/"* "$COMBINE/"
+
+echo "Replacing modified files"
 for i in "${files[@]}"
 	do
-		rm ~/myrepetier/combine/$i
-		ln -s ~/myrepetier/$i ~/myrepetier/combine/
+      cp "$EDITED/$i" "$COMBINE"
 	done
-
 
 function diff(){
 	for i in "${files[@]}"
 	do
-		echo $i
-		colordiff ~/myrepetier/$i ~/Repetier-Firmware/src/ArduinoAVR/Repetier/$i
+		echo "$i"
+		colordiff "$EDITED/$i" "$RHS/$i"
+		echo "$EDITED/$i" "$RHS/$i"
 		read -n1 -r -p "Press any key to continue"
 	done
 }
