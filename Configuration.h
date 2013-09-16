@@ -974,7 +974,7 @@ execution.
 /** Communication errors can swollow part of the ok, which tells the host software to send
 the next command. Not receiving it will cause your printer to stop. Sending this string every
 second, if our queue is empty should prevent this. Comment it, if you don't wan't this feature. */
-//#define WAITING_IDENTIFIER "wait"
+#define WAITING_IDENTIFIER "wait"
 
 /** \brief Sets time for echo debug
 
