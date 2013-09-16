@@ -33,21 +33,48 @@ for i in "${files[@]}"
       cp "$EDITED/$i" "$COMBINE"
 	done
 
+cp "$EDITED/Makefile" "$COMBINE"
+
 function diff(){
 	for i in "${files[@]}"
 	do
-		echo "$i"
+		clear
+		echo -e "\n$i\n"
 		colordiff "$EDITED/$i" "$RHS/$i"
-		echo "$EDITED/$i" "$RHS/$i"
 		read -n1 -r -p "Press any key to continue"
 	done
 }
 
+
 while true; do
-	read -p "Check differences? (y/n)" yn
+	read -p "Get Diffs?(y/n)" yn
 	case $yn in 
 		[Yy]* ) diff; break;;
 		[Nn]* ) exit;;
-		*) echo "Pease answer yes or no.";;
+		*) echo -e "\nPease answer yes or no.";;
 	esac
 done
+
+
+while true; do
+	echo -e "\n"
+   read -p "Make? (y/n)" yn
+   case $yn in
+      [Yy]* ) cd "$COMBINE"; make; break;;
+      [Nn]* ) exit;;
+      *) echo "Pease answer yes or no.";;
+   esac
+done
+
+
+
+while true; do
+   echo "\n"
+   read -p "Upload? (y/n)" yn
+   case $yn in
+      [Yy]* ) cd "$COMBINE"; make upload; break;;
+      [Nn]* ) exit;;
+      *) echo "Pease answer yes or no.";;
+   esac
+done
+
