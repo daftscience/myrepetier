@@ -14,7 +14,7 @@ files=( "pins.h" "uiconfig.h" "Configuration.h")
 #files+=("Configuration.h")
 printf "\t%s\n" "${files[@]}"
 
-
+HOLD=true;
 
 echo "Removing old files"
 rm -r  "$COMBINE"
@@ -46,35 +46,23 @@ function diff(){
 }
 
 
-while true; do
-	read -p "Get Diffs?(y/n)" yn
-	case $yn in 
-		[Yy]* ) diff; break;;
-		[Nn]* ) exit;;
-		*) echo -e "\nPease answer yes or no.";;
-	esac
-done
+#while true; do
+#//	read -p "Get Diffs?(y/n)" yn
+#//	case $yn in 
+#//		[Yy]* ) diff; break;;
+#//		[Nn]* ) exit;;
+#//		*) echo -e "\nPease answer yes or no.";;
+#//	esac
+#//done
 
 
-while true; do
+while $HOLD; do
 	echo -e "\n"
-   read -p "Make? (y/n)" yn
+   read -p "[M]ake? Make [U]pload? [E]xit: " yn
    case $yn in
-      [Yy]* ) cd "$COMBINE"; make; break;;
-      [Nn]* ) exit;;
-      *) echo "Pease answer yes or no.";;
+      [Mm]* ) cd "$COMBINE"; make; break;;
+      [Uu]* ) cd "$COMBINE"; make upload; break;;
+      [Ee]* ) exit;;
+      *) echo "Pease answer M, U, or E";;
    esac
 done
-
-
-
-while true; do
-   echo "\n"
-   read -p "Upload? (y/n)" yn
-   case $yn in
-      [Yy]* ) cd "$COMBINE"; make upload; break;;
-      [Nn]* ) exit;;
-      *) echo "Pease answer yes or no.";;
-   esac
-done
-

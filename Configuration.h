@@ -45,7 +45,7 @@ To override EEPROM settings with config settings, set EEPROM_MODE 0
 
 // BASIC SETTINGS: select your board type, thermistor type, axis scaling, and endstop configuration
 
-/** Number of extruders. Maximum 2 extruders. */
+/** Number of extruders. Maximum 6 extruders. */
 #define NUM_EXTRUDER 1
 
 //// The following define selects which electronics board you have. Please choose the one that matches your setup
@@ -60,6 +60,7 @@ To override EEPROM settings with config settings, set EEPROM_MODE 0
 // Melzi board                = 63  // Define REPRAPPRO_HUXLEY if you have one for correct HEATER_1_PIN assignment!
 // Gen7 1.1 till 1.3.x        = 7
 // Gen7 1.4.1 and later       = 71
+// Sethi 3D_1                 = 72
 // Teensylu (at90usb)         = 8 // requires Teensyduino
 // Printrboard (at90usb)      = 9 // requires Teensyduino
 // Foltyn 3D Master           = 12
@@ -90,6 +91,7 @@ is a full cartesian system where x, y and z moves are handled by separate motors
 1 = z axis + xy H-gantry (x_motor = x+y, y_motor = x-y)
 2 = z axis + xy H-gantry (x_motor = x+y, y_motor = y-x)
 3 = Delta printers (Rostock, Kossel, RostockMax, Cerberus, etc)
+4 = Tuga printer
 Cases 1 and 2 cover all needed xy H gantry systems. If you get results mirrored etc. you can swap motor connections for x and y.
 If a motor turns in the wrong direction change INVERT_X_DIR or INVERT_Y_DIR.
 */
@@ -126,12 +128,6 @@ If a motor turns in the wrong direction change INVERT_X_DIR or INVERT_Y_DIR.
 
     /** \brief Micro stepping rate of X, Y and Y tower stepper drivers */
     #define MICRO_STEPS 8
-
-    /** \brief Number of delta moves in each line. Moves that exceed this figure will be split into multiple lines.
-    Increasing this figure can use a lot of memory since 7 bytes * size of line buffer * MAX_SELTA_SEGMENTS_PER_LINE
-    will be allocated for the delta buffer. With defaults 7 * 16 * 30 = 3360 bytes. This leaves ~1K free RAM on an Arduino
-    Mega. */
-    #define MAX_DELTA_SEGMENTS_PER_LINE 22
 
     // Calculations
     #define AXIS_STEPS_PER_MM ((float)(MICRO_STEPS * STEPS_PER_ROTATION) / PULLEY_CIRCUMFERENCE)
@@ -185,6 +181,7 @@ If a motor turns in the wrong direction change INVERT_X_DIR or INVERT_Y_DIR.
 // 99 Generic thermistor table 3
 // 100 is AD595
 // 101 is MAX6675
+// 102 is MAX31855
 #define EXT0_TEMPSENSOR_TYPE 1
 // Analog input pin for reading temperatures or pin enabling SS for MAX6675
 #define EXT0_TEMPSENSOR_PIN TEMP_0_PIN
@@ -271,7 +268,7 @@ The codes are only executed for multiple extruder when changing the extruder. */
 #define EXT0_SELECT_COMMANDS "M117 Extruder 1"
 #define EXT0_DESELECT_COMMANDS ""
 /** The extruder cooler is a fan to cool the extruder when it is heating. If you turn the etxruder on, the fan goes on. */
-#define EXT0_EXTRUDER_COOLER_PIN 7
+#define EXT0_EXTRUDER_COOLER_PIN 5
 /** PWM speed for the cooler fan. 0=off 255=full speed */
 #define EXT0_EXTRUDER_COOLER_SPEED 255
 
@@ -516,6 +513,8 @@ Value is used for all generic tables created. */
 
 // uncomment the following line for MAX6675 support.
 //#define SUPPORT_MAX6675
+// uncomment the following line for MAX31855 support.
+//#define SUPPORT_MAX31855
 
 // ############# Heated bed configuration ########################
 
@@ -584,7 +583,7 @@ A good start is 30 lower then the optimal value. You need to leave room for cool
 
 /** Extreme values to detect defect thermistors. */
 #define MIN_DEFECT_TEMPERATURE -10
-#define MAX_DEFECT_TEMPERATURE 350
+#define MAX_DEFECT_TEMPERATURE 300
 
 /** \brief Used reference, normally ANALOG_REF_AVCC or ANALOG_REF_AREF for experts ANALOG_REF_INT_2_56 = 2.56V and ANALOG_REF_INT_1_1=1.1V internaly generated */
 #define ANALOG_REF ANALOG_REF_AVCC
@@ -617,7 +616,7 @@ on this endstop.
 
 #define MIN_HARDWARE_ENDSTOP_X false
 #define MIN_HARDWARE_ENDSTOP_Y false
-#define MIN_HARDWARE_ENDSTOP_Z false
+#define MIN_HARDWARE_ENDSTOP_Z true
 #define MAX_HARDWARE_ENDSTOP_X true
 #define MAX_HARDWARE_ENDSTOP_Y true
 #define MAX_HARDWARE_ENDSTOP_Z true
@@ -690,9 +689,9 @@ on this endstop.
 // For delta robot Z_MAX_LENGTH is the maximum travel of the towers and should be set to the distance between the hotend
 // and the platform when the printer is at its home position.
 // If EEPROM is enabled these values will be overidden with the values in the EEPROM
-#define X_MAX_LENGTH 363.0
-#define Y_MAX_LENGTH 363.0
-#define Z_MAX_LENGTH 363.0
+#define X_MAX_LENGTH 363
+#define Y_MAX_LENGTH 363
+#define Z_MAX_LENGTH 363
 
 // Coordinates for the minimum axis. Can also be negative if you want to have the bed start at 0 and the printer can go to the left side
 // of the bed. Maximum coordinate is given by adding the above X_MAX_LENGTH values.
@@ -709,7 +708,7 @@ on this endstop.
 
 // Motor Current setting (Only functional when motor driver current ref pins are connected to a digital trimpot on supported boards)
 #if MOTHERBOARD==301
-#define MOTOR_CURRENT {175,175,175,200,200} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+#define MOTOR_CURRENT {175,175,175,220,220} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 #elif MOTHERBOARD==12
 #define MOTOR_CURRENT {35713,35713,35713,35713,35713} // Values 0-65535 (3D Master 35713 = ~1A)
 #endif
@@ -724,6 +723,34 @@ on this endstop.
 */
 #define DELTA_SEGMENTS_PER_SECOND_PRINT 180 // Move accurate setting for print moves
 #define DELTA_SEGMENTS_PER_SECOND_MOVE 70 // Less accurate setting for other moves
+
+/*  =========== Parameter essential for delta calibration ===================
+
+            C, Y-Axis
+            |                        |___| CARRIAGE_HORIZONTAL_OFFSET
+            |                        |   \
+            |_________ X-axis        |    \
+           / \                       |     \  DELTA_DIAGONAL_ROD
+          /   \                             \
+         /     \                             \    Carriage is at printer center!
+         A      B                             \_____/
+                                              |--| END_EFFECTOR_HORIZONTAL_OFFSET
+                                         |----| DELTA_RADIUS
+                                     |-----------| PRINTER_RADIUS
+
+    Column angles are measured from X-axis counterclockwise
+    "Standard" positions: alpha_A = 210, alpha_B = 330, alpha_C = 90
+*/
+
+/** \brief column positions - change only to correct build imperfections! */
+#define DELTA_ALPHA_A 210
+#define DELTA_ALPHA_B 330
+#define DELTA_ALPHA_C 90
+
+/** Correct radius by this value for each column. Perfect builds have 0 everywhere. */
+#define DELTA_RADIUS_CORRECTION_A 0
+#define DELTA_RADIUS_CORRECTION_B 0
+#define DELTA_RADIUS_CORRECTION_C 0
 
 /** \brief Horizontal offset of the universal joints on the end effector (moving platform).
 */
@@ -740,11 +767,12 @@ on this endstop.
 /**  \brief Horizontal distance bridged by the diagonal push rod when the end effector is in the center. It is pretty close to 50% of the push rod length (250 mm).
 */
 #define DELTA_RADIUS (PRINTER_RADIUS-END_EFFECTOR_HORIZONTAL_OFFSET-CARRIAGE_HORIZONTAL_OFFSET)
+/* ========== END Delta calibation data ==============*/
 
 /** When true the delta will home to z max when reset/powered over cord. That way you start with well defined coordinates.
 If you don't do it, make sure to home first before your first move.
 */
-#define DELTA_HOME_ON_POWER false
+#define DELTA_HOME_ON_POWER true
 
 /** \brief Enable counter to count steps for Z max calculations
 */
@@ -762,6 +790,16 @@ you can also change the values online and auleveling will store the results here
 //#define SOFTWARE_LEVELING
 
 #endif
+#if DRIVE_SYSTEM == 4 // ========== Tuga special settings =============
+/* Radius of the long arm in mm. */
+#define DELTA_RADIUS 250
+#endif
+
+/** \brief Number of delta moves in each line. Moves that exceed this figure will be split into multiple lines.
+Increasing this figure can use a lot of memory since 7 bytes * size of line buffer * MAX_SELTA_SEGMENTS_PER_LINE
+will be allocated for the delta buffer. With defaults 7 * 16 * 22 = 2464 bytes. This leaves ~1K free RAM on an Arduino
+Mega. Used only for nonlinear systems like delta or tuga. */
+#define MAX_DELTA_SEGMENTS_PER_LINE 22
 
 /** After x seconds of inactivity, the stepper motors are disabled.
     Set to 0 to leave them enabled.
@@ -1022,6 +1060,10 @@ instead of driving both with a single stepper. The same works for the other axis
 #define Z2_DIR_PIN    E1_DIR_PIN
 #define Z2_ENABLE_PIN E1_ENABLE_PIN
 
+/* Ditto printing allows 2 extruders to do the same action. This effectively allows
+to print an object two times at the speed of one. Works only with dual extruder setup.
+*/
+#define FEATURE_DITTO_PRINTING false
 
 /* Servos
 
@@ -1047,22 +1089,22 @@ is always running and is not hung up for some unknown reason. */
 
 /* Z-Probing */
 
-#define FEATURE_Z_PROBE false
-#define Z_PROBE_PIN 63
-#define Z_PROBE_PULLUP true
-#define Z_PROBE_ON_HIGH true
+#define FEATURE_Z_PROBE true
+#define Z_PROBE_PIN Z_MIN_PIN  //63
+#define Z_PROBE_PULLUP false
+#define Z_PROBE_ON_HIGH false
 #define Z_PROBE_X_OFFSET -11.2625
 #define Z_PROBE_Y_OFFSET -6.5
 // Waits for a signal to start. Valid signals are probe hit and ok button.
 // This is needful if you have the probe trigger by hand.
-#define Z_PROBE_WAIT_BEFORE_TEST true
+#define Z_PROBE_WAIT_BEFORE_TEST false
 /** Speed of z-axis in mm/s when probing */
-#define Z_PROBE_SPEED 5
+#define Z_PROBE_SPEED 25
 #define Z_PROBE_XY_SPEED 150
 /** The height is the difference between activated probe position and nozzle height. */
-#define Z_PROBE_HEIGHT 39.91
+#define Z_PROBE_HEIGHT 2.3
 /** Gap between probe and bed resp. extruder and z sensor. Must be greater then inital z height inaccuracy! Only used for delta printer calibration. */
-#define Z_PROBE_GAP 30.0
+#define Z_PROBE_GAP 10.0
 /** These scripts are run before resp. after the z-probe is done. Add here code to activate/deactivate probe if needed. */
 #define Z_PROBE_START_SCRIPT ""
 #define Z_PROBE_FINISHED_SCRIPT ""
@@ -1071,7 +1113,7 @@ is always running and is not hung up for some unknown reason. */
    This feature requires a working z-probe and you should have z-endstop at the top not at the bottom.
    The same 3 points are used for the G29 command.
 */
-#define FEATURE_AUTOLEVEL false
+#define FEATURE_AUTOLEVEL true
 #define Z_PROBE_X1 -69.28
 #define Z_PROBE_Y1 -40
 #define Z_PROBE_X2 69.28
@@ -1081,16 +1123,16 @@ is always running and is not hung up for some unknown reason. */
 
 /** Set to false to disable SD support: */
 #ifndef SDSUPPORT  // Some boards have sd support on board. These define the values already in pins.h
-#define SDSUPPORT true
+#define SDSUPPORT false
 /** If set to false all files with longer names then 8.3 or having a tilde in the name will be hidden */
 #define SD_ALLOW_LONG_NAMES false
 // Uncomment to enable or change card detection pin. With card detection the card is mounted on insertion.
-#define SDCARDDETECT 81
+#define SDCARDDETECT -1
 // Change to true if you get a inserted message on removal.
 #define SDCARDDETECTINVERTED false
 #endif
 /** Show extended directory including file length. Don't use this with Pronterface! */
-//#define SD_EXTENDED_DIR
+#define SD_EXTENDED_DIR
 // If you want support for G2/G3 arc commands set to true, otherwise false.
 #define ARC_SUPPORT true
 
@@ -1139,7 +1181,7 @@ Select the language to use.
 #define UI_LANGUAGE 0
 
 // This is line 2 of the status display at startup. Change to your like.
-#define UI_VERSION_STRING2 "Delta Tower"
+#define UI_VERSION_STRING2 "Daftscience"
 
 /** How many ms should a single page be shown, until it is switched to the next one.*/
 #define UI_PAGES_DURATION 4000
@@ -1149,7 +1191,7 @@ info pages with next/previous button/click-encoder */
 #define UI_DISABLE_AUTO_PAGESWITCH true
 
 /** Time to return to info menu if x millisconds no key was pressed. Set to 0 to disable it. */
-#define UI_AUTORETURN_TO_MENU_AFTER 30000
+#define UI_AUTORETURN_TO_MENU_AFTER 90000
 
 #define FEATURE_UI_KEYS 0
 
